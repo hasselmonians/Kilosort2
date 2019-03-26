@@ -1,13 +1,45 @@
-function ops = setConfig(varargin)
+function setConfig(filename, varargin)
 
   % generates a configuration file using the specified options
   % and places it in target location
+  %
+  % setConfig()
+  %
+  % setConfig(filename)
+  %
+  % setConfig(filename, 'PropertyName', 'PropertyValue', ...)
+  %
+  % Arguments
+  %
+  %
+  %
+  %
+  %
+  %
+  %
+  %
+  %
+
+
 
   %% Default options
 
   ops                     = struct;
 
+  % path to the channel map .mat file
   ops.chanMap             = [];
+
+  % path to raw data (including binary)
+  ops.dataPath            = [];
+
+  % path to the .dat file
+  ops.fproc               = [];
+
+  % time range to sort
+  ops.trange              = [0, Inf];
+
+  % total number of channels in your recording
+  ops.nChan               = 384;
 
   % sample rate
   ops.fs                  = 30000;
@@ -57,26 +89,32 @@ function ops = setConfig(varargin)
   ops.nPCs                = 3;      % how many PCs to project the spikes into
   ops.useRAM              = 0;      % not yet available
 
+  % print options if no arguments are given
+  if nargin == 0
+    disp('The allowed options are:')
+    disp(fieldnames(ops))
+  end
+
   % validate and accept options
   if mathlib.iseven(length(varargin))
-  	for ii = 1:2:length(varargin)-1
-  	temp = varargin{ii};
+    for ii = 1:2:length(varargin)-1
+      temp = varargin{ii}
       if ischar(temp)
-      	if ~any(find(strcmp(temp,fieldnames(ops))))
-      		disp(['Unknown option: ' temp])
-      		disp('The allowed options are:')
-      		disp(fieldnames(ops))
-      		error('UNKNOWN OPTION')
-      	else
-      		ops.(temp) = varargin{ii+1};
-      	end
+        if ~any(find(strcmp(temp, fieldnames(ops))))
+          disp(['Unknown option: ' temp])
+          disp('The allowed options are:')
+          disp(fieldnames(ops))
+          error('UNKNOWN OPTION')
+        end
+      else
+        ops.(temp) = varargin{ii+1};
       end
-  end
+    end
   elseif isstruct(varargin{1})
-  	% should be OK...
-  	ops = varargin{1};
+    % assume it's an ops struct
+    ops = varargin{1};
   else
-  	error('Inputs need to be name value pairs')
+    error('Inputs need to be name-value pairs')
   end
 
   %% Post-processing
@@ -84,5 +122,8 @@ function ops = setConfig(varargin)
   if isempty(ops.chanMap)
     ops.chanMap = 1:ops.Nchan; % treated as linear probe if no chanMap file
   end
+
+  % save options to filename
+  save(filename, ops);
 
 end % function
